@@ -2,13 +2,25 @@ import React, { useCallback, useEffect, useState } from 'react'
 import ReactPlayer from 'react-player'
 import { useSocket } from '../context/SocketProvider'
 import peer from '../services/peer';
-
+import './Room.css'
 
 const Room = () => {
     const socket = useSocket();
     const [remoteSocketId, setRemoteSocketId] = useState(null);
     const [myStream, setMyStream] = useState(null);
     const [live, setLive] = useState(null);
+    const [videoMuted, setVideoMuted] = useState(false);
+   const [audioMuted, setAudioMuted] = useState(false);
+
+  const handleVideoToggle = () => {
+    setVideoMuted(!videoMuted);
+    myStream.getVideoTracks()[0].enabled = !videoMuted;
+  };
+
+  const handleAudioToggle = () => {
+    setAudioMuted(!audioMuted);
+    myStream.getAudioTracks()[0].enabled = !audioMuted;
+  };
 
     const handleUserJoined = useCallback(({ email, id }) => {
         console.log(`Email ${email} joined the room`);
@@ -111,22 +123,71 @@ const Room = () => {
         setMyStream(stream);
     }, [remoteSocketId, socket]);
 
-    return (
-        <div>
-            <h1>Room</h1>
-            <h4>{remoteSocketId ? 'Connected' : 'No one in room'}</h4>
-            {myStream && <button onClick={sendLive}>Send Live</button>}
-            {remoteSocketId && <button onClick={handleCallUser}>Call</button>}
-            <h1>My Stream</h1>
-            {
-                myStream && <ReactPlayer playing muted height="200px" width="300px" url={myStream} />
-            }
-            <h1>Live</h1>
-            {
-                live && <ReactPlayer playing muted height="200px" width="300px" url={live} />
-            }
-        </div>
-    )
-}
+    const handleHangUp = () => {
+      // Clean up and end the call
+      setRemoteSocketId(null);
+      setMyStream(null);
+      setLive(null);
+      peer.peer.close();
+    };
 
-export default Room
+    return (
+      <div className="room-container">
+        <div className="room-header">
+          <h1>Room</h1>
+          <h4>{remoteSocketId ? 'Connected' : 'No one in room'}</h4>
+        </div>
+        <div className="room-actions">
+          {myStream && (
+            <button className="action-button" onClick={sendLive}>
+              Send Live
+            </button>
+          )}
+          {remoteSocketId && (
+            <button className="action-button" onClick={handleCallUser}>
+              Call
+            </button>
+          )}
+          {myStream && (
+            <>
+              <button
+                className={`toggle-button ${videoMuted ? 'muted' : ''}`}
+                onClick={handleVideoToggle}
+              >
+                {videoMuted ? 'Video On' : 'Video Off'}
+              </button>
+              <button
+                className={`toggle-button ${audioMuted ? 'muted' : ''}`}
+                onClick={handleAudioToggle}
+              >
+                {audioMuted ? 'Audio On' : 'Audio Off'}
+              </button>
+            </>
+          )}
+          <div >
+            {myStream && (
+            <button className="action-button hang-up-button" onClick={handleHangUp}>
+              Hang Up
+            </button>
+           )}
+          </div>
+        </div>
+        <div className="stream-section">
+          <div className="stream">
+            <h2>My Stream</h2>
+            {myStream && (
+              <ReactPlayer playing muted width="100%" url={myStream} />
+            )}
+          </div>
+          <div className="stream">
+            <h2>Live</h2>
+            {live && <ReactPlayer playing muted width="100%" url={live} />}
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  export default Room;
+  
+    
