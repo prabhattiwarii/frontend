@@ -89,3 +89,7 @@ body {
 .stream:hover {
   transform: scale(1.03);
 }
+
+.action-button.recording {
+  background-color: #f44336;
+}

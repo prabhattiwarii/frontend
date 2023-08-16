@@ -3,6 +3,7 @@ import ReactPlayer from 'react-player'
 import { useSocket } from '../context/SocketProvider'
 import peer from '../services/peer';
 import './Room.css'
+import Chat from './Chat';
 
 const Room = () => {
     const socket = useSocket();
@@ -10,7 +11,8 @@ const Room = () => {
     const [myStream, setMyStream] = useState(null);
     const [live, setLive] = useState(null);
     const [videoMuted, setVideoMuted] = useState(false);
-   const [audioMuted, setAudioMuted] = useState(false);
+    const [audioMuted, setAudioMuted] = useState(false);
+
 
   const handleVideoToggle = () => {
     setVideoMuted(!videoMuted);
@@ -184,6 +186,7 @@ const Room = () => {
             {live && <ReactPlayer playing muted width="100%" url={live} />}
           </div>
         </div>
+        <Chat/>
       </div>
     );
   };
